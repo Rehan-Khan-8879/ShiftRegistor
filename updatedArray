@@ -1,0 +1,129 @@
+#define data PB0  //arduino pin 8 and IC pin 14
+#define clock PB1 //arduino pin 9 and IC pin 11 
+#define latch PB2 //arduino pin 10 and IC pin 12
+//update it as your pins
+bool bitArray[8]={0,0,0,0,0,0,0,0};
+
+void delay_ms(unsigned long ms);
+void digiWrite(int pin,bool state);
+void clockPulse();
+void latchPulse();
+void bitsWrite(int pin,bool state);
+void updateBits();
+
+int main(){
+  //PUT YOUR CODE HERE TO RUN ITS ONCE
+  DDRB = 0xff;
+  PORTB = 0x00;
+
+  while(true){
+    //PUT YOUR CODE HERE TO RUN IT IN LOOP
+    bitsWrite(0,1);
+    updateBits();
+  }
+}
+
+
+//our own digitalWrite(); function for array
+void bitsWrite(int pin,bool state){
+  for(int i=0;i<8;i++){
+    if(i==pin){
+      bitArray[i]=state;
+      break;
+    }
+  }
+}
+//function to update the array to latest program it shoul b at last of loop line
+void updateBits(){
+  for(int i = 7;i>=0;i-=1){
+    if(bitArray[i]==1){
+      digiWrite(data,HIGH);
+      //delay_ms(50);
+      clockPulse();
+      //latchPulse();
+    }else if(bitArray[i]==0){
+      //delay_ms(50);
+      clockPulse();
+      //latchPulse();     
+    }
+    
+    digiWrite(data,LOW);
+  }
+  latchPulse();
+}
+//function to generat clock pulse 
+void clockPulse(){
+  digiWrite(clock,HIGH);
+  delay_ms(5);
+  digiWrite(clock,LOW);
+  delay_ms(5);
+}
+// function to generat latch pulse
+void latchPulse(){
+  digiWrite(latch,HIGH);
+  delay_ms(5);
+  digiWrite(latch,LOW);
+  delay_ms(5);
+}
+//our own digitalWrite(); function for arduino pins
+void digiWrite(int pin,bool state){
+  if(state == HIGH){
+    PORTB |= (1<<pin);
+  }else if(state == LOW){
+    PORTB &= ~(1<<pin);
+  }
+}
+//our own delay(); function for generating delay
+void delay_ms(unsigned long ms){
+  for(unsigned long i = 0;i<ms;i++){
+    for(unsigned long j=0;j<1000;j++){
+      asm("");
+    }
+  }
+}
+
+////////////////////////////////////////////////////kachra/////////////////////////////*
+/*
+
+
+    //start
+    //set all the led to HIGH one by one
+    digiWrite(data,HIGH);
+    delay_ms(200);
+    for(int i =0;i<8;i++){
+      clockPulse();
+      latchPulse();
+      delay_ms(2000);
+    }
+    //set all the led to LOW one by one
+    digiWrite(data,LOW);
+    delay_ms(100);
+    for(int i=0;i<8;i++){
+      clockPulse();
+      latchPulse();
+      delay_ms(2000);
+    }//               end
+
+
+      //start
+    //to set alternating led state
+    for(int i=0;i<4;i++){
+      //Set to high and pulse 
+      digiWrite(data,HIGH);
+      delay_ms(200);
+      clockPulse();
+      latchPulse();
+      delay_ms(2000);
+      //set to low and pulse
+      digiWrite(data,LOW);
+      delay_ms(200);
+      clockPulse();
+      latchPulse();
+      delay_ms(2000);     
+    }                       //end
+
+
+
+
+
+*/
